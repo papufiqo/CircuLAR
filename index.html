@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoChain | Industrial Symbiosis Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --accent: #e67e22;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            flex-grow: 1;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-menu a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-menu i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar-footer {
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            background-color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: var(--light);
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            width: 300px;
+        }
+        
+        .search-bar input {
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0.5rem;
+            width: 100%;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-info h4 {
+            font-weight: 500;
+        }
+        
+        .user-info p {
+            font-size: 0.8rem;
+            color: #777;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header h2 {
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+        
+        .card-header .action {
+            color: var(--secondary);
+            cursor: pointer;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #e6f7ee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--success);
+            font-size: 1.5rem;
+        }
+        
+        .stat-info h3 {
+            font-size: 1.8rem;
+            color: var(--dark);
+        }
+        
+        .stat-info p {
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        .chart-container {
+            height: 250px;
+            margin-top: 1rem;
+        }
+        
+        /* Material Flow */
+        .material-flow {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+        }
+        
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .flow-step:not(:last-child):after {
+            content: "";
+            position: absolute;
+            top: 30px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--secondary), transparent);
+            z-index: 1;
+        }
+        
+        .flow-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #e6f7ee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--success);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .flow-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .flow-desc {
+            font-size: 0.9rem;
+            color: #777;
+        }
+        
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table th {
+            color: #777;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .status-active {
+            background-color: #e6f7ee;
+            color: var(--success);
+        }
+        
+        .status-pending {
+            background-color: #fef5e6;
+            color: var(--warning);
+        }
+        
+        .status-inactive {
+            background-color: #ffe6e6;
+            color: var(--danger);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: var(--light);
+        }
+        
+        /* API Console */
+        .api-console {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .api-endpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .api-endpoint {
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 1rem;
+        }
+        
+        .api-method {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .get {
+            background-color: #e6f7ee;
+            color: var(--success);
+        }
+        
+        .post {
+            background-color: #f0f5ff;
+            color: var(--info);
+        }
+        
+        .put {
+            background-color: #fef5e6;
+            color: var(--warning);
+        }
+        
+        .delete {
+            background-color: #ffe6e6;
+            color: var(--danger);
+        }
+        
+        .api-url {
+            font-family: monospace;
+            margin-bottom: 0.5rem;
+        }
+        
+        .api-description {
+            font-size: 0.9rem;
+            color: #777;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-container {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .flow-step:not(:last-child):after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-recycle"></i></div>
+                <h1>EcoChain</h1>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
+                <li><a href="#"><i class="fas fa-industry"></i> <span>Industrial Symbiosis</span></a></li>
+                <li><a href="#"><i class="fas fa-link"></i> <span>Supply Chain Tracking</span></a></li>
+                <li><a href="#"><i class="fas fa-chart-line"></i> <span>Material Flow Analytics</span></a></li>
+                <li><a href="#"><i class="fas fa-code"></i> <span>API Management</span></a></li>
+                <li><a href="#"><i class="fas fa-users"></i> <span>Market Participants</span></a></li>
+                <li><a href="#"><i class="fas fa-money-bill-wave"></i> <span>Monetization</span></a></li>
+                <li><a href="#"><i class="fas fa-shield-alt"></i> <span>Sustainability Metrics</span></a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <p>v2.1.0 | EcoChain Platform</p>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <div class="header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search materials, companies, or products...">
+                </div>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <h4>Sarah Johnson</h4>
+                        <p>Sustainability Manager</p>
+                    </div>
+                    <div class="avatar">SJ</div>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active">All Industries</div>
+                <div class="tab">Manufacturing</div>
+                <div class="tab">Waste Management</div>
+                <div class="tab">Recycling</div>
+                <div class="tab">Sustainable Development</div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Circular Economy Impact</h2>
+                        <div class="action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon"><i class="fas fa-leaf"></i></div>
+                        <div class="stat-info">
+                            <h3>78%</h3>
+                            <p>Materials Recycled</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="impactChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Supply Chain Partners</h2>
+                        <div class="action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon"><i class="fas fa-handshake"></i></div>
+                        <div class="stat-info">
+                            <h3>342</h3>
+                            <p>Active Partnerships</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="partnersChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Revenue Streams</h2>
+                        <div class="action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-info">
+                            <h3>$3.2M</h3>
+                            <p>Annual Savings</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="material-flow">
+                <div class="card-header">
+                    <h2>Material Flow Tracking</h2>
+                    <div class="action"><i class="fas fa-ellipsis-h"></i></div>
+                </div>
+                
+                <div class="flow-container">
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-box-open"></i></div>
+                        <div class="flow-title">Raw Materials</div>
+                        <div class="flow-desc">Sourcing</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-industry"></i></div>
+                        <div class="flow-title">Manufacturing</div>
+                        <div class="flow-desc">Production</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-shipping-fast"></i></div>
+                        <div class="flow-title">Distribution</div>
+                        <div class="flow-desc">Logistics</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-shopping-cart"></i></div>
+                        <div class="flow-title">Consumption</div>
+                        <div class="flow-desc">End User</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-trash-restore"></i></div>
+                        <div class="flow-title">Waste Collection</div>
+                        <div class="flow-desc">Recovery</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-icon"><i class="fas fa-recycle"></i></div>
+                        <div class="flow-title">Recycling</div>
+                        <div class="flow-desc">Circular Economy</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Recent Transactions</h2>
+                        <div class="action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Recycled Plastic</td>
+                                <td>GreenCycle Inc</td>
+                                <td>EcoPack Materials</td>
+                                <td>12.5 tons</td>
+                                <td><span class="status status-active">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Reclaimed Water</td>
+                                <td>AquaSave Systems</td>
+                                <td>MetalWorks Ltd</td>
+                                <td>35,000 L</td>
+                                <td><span class="status status-active">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Bio-Waste</td>
+                                <td>City Food Market</td>
+                                <td>BioEnergy Solutions</td>
+                                <td>8.2 tons</td>
+                                <td><span class="status status-pending">In Transit</span></td>
+                            </tr>
+                            <tr>
+                                <td>Scrap Metal</td>
+                                <td>AutoManufacture Inc</td>
+                                <td>MetalRefinery Co</td>
+                                <td>22.7 tons</td>
+                                <td><span class="status status-active">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Waste Heat</td>
+                                <td>PowerPlant Ltd</td>
+                                <td>GreenHouses Inc</td>
+                                <td>120 MWh</td>
+                                <td><span class="status status-pending">Processing</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Symbiosis Opportunities</h2>
+                        <div class="action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Opportunity</th>
+                                <th>Potential Savings</th>
+                                <th>Participants</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Plastic Waste to 3D Printing</td>
+                                <td>$120K/year</td>
+                                <td>3</td>
+                                <td><span class="status status-active">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Waste Heat Exchange</td>
+                                <td>$85K/year</td>
+                                <td>2</td>
+                                <td><span class="status status-pending">Review</span></td>
+                            </tr>
+                            <tr>
+                                <td>Organic Waste to Biofuel</td>
+                                <td>$210K/year</td>
+                                <td>4</td>
+                                <td><span class="status status-active">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Shared Logistics Network</td>
+                                <td>$150K/year</td>
+                                <td>5</td>
+                                <td><span class="status status-pending">Planning</span></td>
+                            </tr>
+                            <tr>
+                                <td>Water Reclamation Project</td>
+                                <td>$95K/year</td>
+                                <td>3</td>
+                                <td><span class="status status-active">Active</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="api-console">
+                <div class="card-header">
+                    <h2>API Endpoints for MNOs</h2>
+                    <div class="action"><i class="fas fa-ellipsis-h"></i></div>
+                </div>
+                
+                <div class="api-endpoints">
+                    <div class="api-endpoint">
+                        <div class="api-method get">GET</div>
+                        <div class="api-url">/api/v1/materials/tracking/{id}</div>
+                        <div class="api-description">Retrieve real-time tracking data for materials</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method post">POST</div>
+                        <div class="api-url">/api/v1/symbiosis/matches</div>
+                        <div class="api-description">Find industrial symbiosis opportunities</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method get">GET</div>
+                        <div class="api-url">/api/v1/sustainability/metrics</div>
+                        <div class="api-description">Access sustainability and circularity metrics</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method post">POST</div>
+                        <div class="api-url">/api/v1/network-slicing/allocate</div>
+                        <div class="api-description">Request network slice for IoT tracking</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Impact Chart
+            const impactCtx = document.getElementById('impactChart').getContext('2d');
+            const impactChart = new Chart(impactCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Recycled', 'Linear', 'Lost'],
+                    datasets: [{
+                        data: [78, 15, 7],
+                        backgroundColor: [
+                            'rgba(39, 174, 96, 0.7)',
+                            'rgba(243, 156, 18, 0.7)',
+                            'rgba(231, 76, 60, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(39, 174, 96)',
+                            'rgb(243, 156, 18)',
+                            'rgb(231, 76, 60)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Partners Chart
+            const partnersCtx = document.getElementById('partnersChart').getContext('2d');
+            const partnersChart = new Chart(partnersCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Partnerships',
+                        data: [12, 19, 15, 22, 18, 25],
+                        backgroundColor: 'rgba(39, 174, 96, 0.7)',
+                        borderColor: 'rgb(39, 174, 96)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: 'Revenue (in thousands $)',
+                        data: [650, 720, 810, 920],
+                        borderColor: '#3498db',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
